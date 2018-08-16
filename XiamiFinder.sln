@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27428.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XiamiFinder", "XiamiFinder.csproj", "{98C6A75A-4620-4503-AA75-59F4B13F5B51}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XiamiFinder.Test", "XiamiFinder.Test\XiamiFinder.Test.csproj", "{FBFFC294-8B45-423E-B85D-C0C981EF2B02}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{98C6A75A-4620-4503-AA75-59F4B13F5B51}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98C6A75A-4620-4503-AA75-59F4B13F5B51}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98C6A75A-4620-4503-AA75-59F4B13F5B51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBFFC294-8B45-423E-B85D-C0C981EF2B02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBFFC294-8B45-423E-B85D-C0C981EF2B02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBFFC294-8B45-423E-B85D-C0C981EF2B02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBFFC294-8B45-423E-B85D-C0C981EF2B02}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
