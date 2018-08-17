@@ -18,6 +18,7 @@ namespace XiamiFinder
     {
         private static string urlParts = "http://www.xiami.com/song/playlist/id/{1}/type/{0}/cat/json";
         private static string SongUrl = string.Format(urlParts, 0, "{0}");
+        private static string CollectUrl = string.Format(urlParts, 3, "{0}");
         private static string searchUrl = "https://www.xiami.com/search?key={0}";
         private static string searchUrl_Baidu = "https://www.baidu.com/s?wd={0}";
         private static string playUrl = "http://www.xiami.com/play?ids=";
@@ -48,14 +49,28 @@ namespace XiamiFinder
             var result_json = HttpGet(request_url);
             if (result_json.Length == 0)
                 return null;
-            var json = JObject.Parse(result_json);
+            JObject json;
+            try
+            {
+                json = JObject.Parse(result_json);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
             if (json["data"]["trackList"].HasValues == false)
                 return null;
             var song = json["data"]["trackList"][0];
+            return ParseJsonSongInfo(song);
+        }
+
+        private Tuple<string, string, string, string> ParseJsonSongInfo(JToken song)
+        {
             if (song["location"] == null) return null;
             var loc = song["location"].Value<string>();
             var lyric = "http:" + song["lyricInfo"]["lyricFile"];
-            var lyric_str = lyric=="http:" ? "" : HttpGet(lyric);
+            var lyric_str = lyric == "http:" ? "" : HttpGet(lyric);
             lyric_str = lrc_proc.Replace(lyric_str, "");
             lyric_str = lrc_translate.Replace(lyric_str, "[$1]$2($3)");
             var real_loc = xiamiUrlDecode(loc);
@@ -80,7 +95,39 @@ namespace XiamiFinder
                 }
             }
 
-            return new Tuple<string, string, string, string>(songName,artist,real_loc,lyric_str);
+            return new Tuple<string, string, string, string>(songName, artist, real_loc, lyric_str);
+        }
+
+        public List<Tuple<string, string, string, string> > GetCollection(string id)
+        {
+            var request_url = string.Format(CollectUrl, id);
+            var result_json = HttpGet(request_url);
+            var songList = new List<Tuple<string, string, string, string>>();
+            if (result_json.Length == 0)
+                return null;
+            var json = JObject.Parse(result_json);
+            if (json["data"]["trackList"].HasValues == false)
+                return null;
+            foreach (var song in json["data"]["trackList"] as JArray)
+            {
+                var songInfo = ParseJsonSongInfo(song);
+                if (songInfo != null)
+                {
+                    songList.Add(songInfo);
+                }
+            }
+            return songList;
+        }
+
+        public static Regex pat_baidu_collection = new Regex("https://www.xiami.com/collect/([^\'\"\\?]+)");
+        public string SearchCollection(string txt)
+        {
+            var result_txt = HttpGet(string.Format(searchUrl_Baidu, txt + Uri.EscapeUriString(" site:www.xiami.com")));
+            result_txt = result_txt.Substring(result_txt.IndexOf("<body"));//略过head部分提高效率?
+            var result_1 = pat_baidu_collection.Match(result_txt);
+            if (!result_1.Success)
+                return null;
+            return result_1.Groups[1].ToString();
         }
         
         public static Regex pat_baidu_2 = new Regex("https://www.xiami.com/song/([^\'\"\\?]+)");
@@ -171,13 +218,22 @@ namespace XiamiFinder
             return result.Content.ReadAsStringAsync().Result;
         }
 
+
+        private object context_lock = new object();
         protected string HttpGet(string uri)
         {
             string hoststr = uri.Replace("https://", "").Replace("http://", "");
-            hoststr = hoststr.Substring(0, hoststr.IndexOf("/"));
-            _client.DefaultRequestHeaders.Host = hoststr;
-            _client.DefaultRequestHeaders.Referrer = new Uri(uri.Replace("/cat/json", "").Replace(xiamiUrl, playUrl));
-            var result = _client.GetAsync(uri).Result;
+            Task<HttpResponseMessage> task;
+            lock (context_lock)
+            {
+                hoststr = hoststr.Substring(0, hoststr.IndexOf("/"));
+                _client.DefaultRequestHeaders.Host = hoststr;
+                _client.DefaultRequestHeaders.Referrer =
+                    new Uri(uri.Replace("/cat/json", "").Replace(xiamiUrl, playUrl));
+                task = _client.GetAsync(uri);
+            }
+
+            var result = task.Result;
             if (result.Content.Headers.ContentEncoding.Contains("gzip"))
             {
                 var rawResult = result.Content.ReadAsByteArrayAsync().Result;

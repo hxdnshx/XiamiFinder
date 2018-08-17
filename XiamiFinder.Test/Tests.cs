@@ -71,5 +71,23 @@ namespace XiamiFinder.Test
             var result2 = down.SafeSearch("主播", "ILIAS", true);
             Assert.AreNotEqual(null, result2);
         }
+
+        [TestMethod]
+        public void CollectSearchTest()
+        {
+            XiamiFetcher fetch = new XiamiFetcher();
+            var testName = "M3-41迫真作文大赛";
+            var result = fetch.SearchCollection(testName);
+            Assert.AreEqual("387458228", result);
+        }
+
+        [TestMethod]
+        public void GetCollect()
+        {
+            XiamiFetcher fetch = new XiamiFetcher();
+            var testName = "387458228";
+            var result = fetch.GetCollection(testName);
+            Assert.AreNotEqual(null, result);
+        }
     }
 }

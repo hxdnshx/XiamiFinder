@@ -16,6 +16,24 @@ namespace XiamiFinder
             setInfo("虾米搜索", "Finnite", "recollectionforgot@gmail.com", "0.0.2", "喵呜", true);
         }
 
+        protected override List<SongItem> GetPlaylist(string who, string keyword, bool needLyric = false)
+        {
+            string search_result = "";
+            int tmp;
+            if (int.TryParse(keyword, out tmp))
+                search_result = keyword;
+            else
+                search_result = fetcher.SearchCollection(keyword);
+            var result = fetcher.GetCollection(search_result);
+            if (result == null)
+            {
+                return null;
+            }
+
+            return result.Select(song => SongItem.init(this, song.Item1, search_result + "_" + song.Item1.GetHashCode(), who,
+                new string[] {song.Item2}, song.Item3, song.Item4, "")).ToList();
+        }
+
         protected override SongItem Search(string who, string what, bool needLyric = false)
         {
             var search_result = fetcher.SearchSong(what);
