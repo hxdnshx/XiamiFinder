@@ -11,6 +11,7 @@
     <AssemblyName>XiamiFinder</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,9 +33,11 @@
   <ItemGroup>
     <Reference Include="DMPlugin_DGJ">
       <HintPath>.\DMPlugin_DGJ.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -55,4 +58,15 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>cd $(SolutionDir)
+set files=
+for /r .\bin\$(ConfigurationName)\ %25%25i in (*.dll) do (
+call set files=%25%25files%25%25 %25%25~si
+)
+echo %25files%25
+packages\ILMerge.2.14.1208\tools\ILMerge %25files%25 /out:./bin/$(ConfigurationName)/XiamiFinder_Merged.dll
+copy ".\bin\$(ConfigurationName)\XiamiFinder_Merged.dll" ".\bin\$(ConfigurationName)\XiamiFinder.点歌姬搜索拓展"
+del ".\bin\$(ConfigurationName)\XiamiFinder_Merged.dll"</PostBuildEvent>
+  </PropertyGroup>
 </Project>
