@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Reflection;
+using DMPlugin_DGJ;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using XiamiFinder;
 namespace XiamiFinder.Test
@@ -40,6 +42,23 @@ namespace XiamiFinder.Test
             Assert.AreNotEqual(null, result2);
         }
 
+        public delegate SongInfo SearchDelegate(XiamiDownload inst, string keyword); 
+
+        public SearchDelegate GetSearch()
+        {
+            var typeInfo = typeof(XiamiDownload);
+            var mi = typeInfo.GetMethod("Search",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.InvokeMethod);
+            return mi.CreateDelegate(typeof(SearchDelegate)) as SearchDelegate;
+        }
+
+        [TestMethod]
+        public void GetSearchTest()
+        {
+            var GetSearchResult = GetSearch();
+            Assert.AreNotEqual(null, GetSearchResult);
+        }
+
         [TestMethod]
         public void SongNameSpecialChar()
         {
@@ -47,7 +66,7 @@ namespace XiamiFinder.Test
             XiamiDownload down = new XiamiDownload();
             //Re:GENERATION (Extended Mix) 田口康裕
             var search = "Re%3aGENERATION+(Extended+Mix)+%e7%94%b0%e5%8f%a3%e5%ba%b7%e8%a3%95";
-            var result = down.SafeSearch("主播", search, true);
+            var result = GetSearch()(down, search);
             Assert.AreNotEqual(null, result);
         }
 
@@ -66,9 +85,9 @@ namespace XiamiFinder.Test
         {
             XiamiDownload down = new XiamiDownload();
 
-            var result = down.SafeSearch("主播", "positive+dance+%22Final+RAVE%22+Cranky", true);
+            var result = GetSearch()(down, "positive+dance+%22Final+RAVE%22+Cranky");
             Assert.AreNotEqual(null, result);
-            var result2 = down.SafeSearch("主播", "ILIAS", true);
+            var result2 = GetSearch()(down, "ILIAS");
             Assert.AreNotEqual(null, result2);
         }
 

@@ -31,6 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BilibiliDM_PluginFramework">
+      <HintPath>.\BilibiliDM_PluginFramework.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="DMPlugin_DGJ">
       <HintPath>.\DMPlugin_DGJ.dll</HintPath>
       <Private>False</Private>

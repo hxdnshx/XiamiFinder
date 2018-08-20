@@ -43,7 +43,7 @@ namespace XiamiFinder
 
         private static Regex lrc_proc = new Regex("<\\d+>");
         private static Regex lrc_translate = new Regex(@"\[(\d+:\d+\.\d+)\]([^\r\n]+)[\r\n]+\[x-trans\]([^\r\n]+)");
-        public Tuple<string, string, string, string> getSongInfo(string id)
+        public Tuple<string, string, string, string, string> getSongInfo(string id)
         {
             var request_url = string.Format(SongUrl, id);
             var result_json = HttpGet(request_url);
@@ -65,7 +65,7 @@ namespace XiamiFinder
             return ParseJsonSongInfo(song);
         }
 
-        private Tuple<string, string, string, string> ParseJsonSongInfo(JToken song)
+        private Tuple<string, string, string, string, string> ParseJsonSongInfo(JToken song)
         {
             if (song["location"] == null) return null;
             var loc = song["location"].Value<string>();
@@ -76,6 +76,7 @@ namespace XiamiFinder
             var real_loc = xiamiUrlDecode(loc);
             var artist = song["artist"].Value<string>();
             var songName = song["songName"].Value<string>();
+            var songId = song["songId"].Value<string>();
             var myMusicFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
             var myMusicFolder = new DirectoryInfo(myMusicFolderPath);
             if (IsValidFilename($"{artist}-{songName}.mp3"))
@@ -85,8 +86,8 @@ namespace XiamiFinder
                     foreach (var ele in myMusicFolder.EnumerateFiles($"{artist}-{songName}.mp3",
                         SearchOption.AllDirectories))
                     {
-                        return new Tuple<string, string, string, string>(songName, artist, $"file://{ele.FullName}",
-                            lyric_str);
+                        return new Tuple<string, string, string, string, string>(songName, artist, $"file://{ele.FullName}",
+                            lyric_str, songId);
                     }
                 }
                 catch (Exception)
@@ -95,14 +96,14 @@ namespace XiamiFinder
                 }
             }
 
-            return new Tuple<string, string, string, string>(songName, artist, real_loc, lyric_str);
+            return new Tuple<string, string, string, string, string>(songName, artist, real_loc, lyric_str, songId);
         }
 
-        public List<Tuple<string, string, string, string> > GetCollection(string id)
+        public List<Tuple<string, string, string, string, string>> GetCollection(string id)
         {
             var request_url = string.Format(CollectUrl, id);
             var result_json = HttpGet(request_url);
-            var songList = new List<Tuple<string, string, string, string>>();
+            var songList = new List<Tuple<string, string, string, string, string>>();
             if (result_json.Length == 0)
                 return null;
             var json = JObject.Parse(result_json);
